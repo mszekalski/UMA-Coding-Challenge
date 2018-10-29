@@ -52,7 +52,11 @@ class Doctor < ApplicationRecord
 
     end
 
-    availability
+    if availability.length > 0
+      return availability
+    else
+      return "No availbility for that date"
+    end
 
   end
 
