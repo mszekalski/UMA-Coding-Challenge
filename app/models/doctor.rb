@@ -13,7 +13,7 @@ class Doctor < ApplicationRecord
       start_time_coming_in = appointment_time
       if (start_time_current <= start_time_coming_in && start_time_coming_in <= end_time_current ||
         start_time_coming_in <= start_time_current && start_time_current <= end_time_coming_in)
-        
+
         self.errors.add(:name, "Appointment not available")
       end
     end
@@ -25,7 +25,8 @@ class Doctor < ApplicationRecord
 
   def delete_appointment(appointment_time)
     appointment = self.appointments.find_by(appointment_time: appointment_time)
-    appointment.destroy
+
+    Appointment.destroy(appointment.id)
   end
 
   def available_appointments(date)
@@ -53,7 +54,7 @@ class Doctor < ApplicationRecord
       if index < appointments.length - 1 && (end_time.to_time + 1.hours).to_datetime < next_start_time
         availability << "#{end_time_formated} to #{next_start_time_formated}"
       end
-      debugger
+
       if index == sorted.length - 1 && end_hour <= 16
         availability << "#{end_time_formated} to 5:00PM"
       end

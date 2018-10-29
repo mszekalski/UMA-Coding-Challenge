@@ -1,16 +1,8 @@
 class Appointment < ApplicationRecord
   validates :appointment_time, :duration, presence: true
   belongs_to :doctor
-  validate :between_nine_and_five, :is_a_date
+  validate :between_nine_and_five
   validates_numericality_of :duration, :greater_than_or_equal_to => 1, :only_integer => true, :message => "Appointments must last atleast an hour and increase at one hour increments"
-
-  def is_a_date
-    if (self.appointment_time.kind_of?(DateTime) == false)
-      self.errors.add(:name, "Pick a valid date")
-    end
-  end
-
-
 
   def between_nine_and_five
     day_of_week = self.appointment_time.strftime('%A')

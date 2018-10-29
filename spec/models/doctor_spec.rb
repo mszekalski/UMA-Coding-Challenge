@@ -38,6 +38,18 @@ RSpec.describe Doctor, type: :model do
     expect(doctor.errors[:name]).to include("Appointment not available")
   end
 
+  it 'does save appointments that are back to back' do
+    doctor = Doctor.create(first_name: "Matthew", last_name: "Szekalski")
+    date1 = DateTime.parse('31st Oct 2018 12:00:00')
+    date2 = DateTime.parse('31st Oct 2018 13:00:00')
+    appointment1 = doctor.create_appointment(date1, 1)
+    appointment2 = doctor.create_appointment(date2, 1)
+    appointment2.valid?
+    appointment1.valid?
+    expect(appointment1).to be_valid
+    expect(appointment2).to be_valid
+  end
+
   it "won't make an appointment on a Saturday" do
     doctor = Doctor.create(first_name: "Matthew", last_name: "Szekalski")
     date = DateTime.parse('3rd Nov 2018 09:00:00')
@@ -96,5 +108,13 @@ RSpec.describe Doctor, type: :model do
     appointment1 = doctor.create_appointment(date1, 24)
     appointment1.valid?
     expect(appointment1.errors[:name]).to include("Invalid end time")
+  end
+
+  it "deletes appointments" do
+    doctor = Doctor.create(first_name: "Matthew", last_name: "Szekalski")
+    date1 = DateTime.parse('31st Oct 2018 12:00:00')
+    appointment1 = doctor.create_appointment(date1, 1)
+    doctor.delete_appointment(appointment1.appointment_time)
+    expect { appointment1.reload }.to raise_error ActiveRecord::RecordNotFound
   end
 end
