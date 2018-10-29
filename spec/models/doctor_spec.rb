@@ -125,7 +125,6 @@ RSpec.describe Doctor, type: :model do
     expect(doctor.available_appointments(date1)).to eq(["10:00AM to 5:00PM"])
   end
 
-
   it "returns availbility when the doctor has multiple appointments during the day" do
     doctor = Doctor.create(first_name: "Matthew", last_name: "Szekalski")
     date1 = DateTime.parse('31st Oct 2018 9:00:00')

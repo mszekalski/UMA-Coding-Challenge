@@ -38,7 +38,7 @@ class Doctor < ApplicationRecord
         next_appointment = sorted[index + 1]
       end
 
-      if  appointment.start_hour >= 10 && index == 0
+      if appointment.start_hour >= 10 && index == 0
         availability << "9:00AM to #{appointment.start_time_formated}"
       end
 
