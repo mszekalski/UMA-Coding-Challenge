@@ -3,6 +3,9 @@ class Doctor < ApplicationRecord
   has_many :appointments
 
   def create_appointment(appointment_time, duration)
+    if appointment_time < (DateTime.now - 5.second)
+      self.errors.add(:name, "Can't schedule an appointment in the past")
+    end
     self.appointments.each do |appointment|
       end_time_current = (appointment.appointment_time.to_time + appointment.duration.hours).to_datetime
       start_time_current = appointment.appointment_time
@@ -10,7 +13,8 @@ class Doctor < ApplicationRecord
       start_time_coming_in = appointment_time
       if (start_time_current <= start_time_coming_in && start_time_coming_in <= end_time_current ||
         start_time_coming_in <= start_time_current && start_time_current <= end_time_coming_in)
-        puts "Appointment not available"
+        
+        self.errors.add(:name, "Appointment not available")
       end
     end
 
@@ -36,7 +40,7 @@ class Doctor < ApplicationRecord
       end_time = (appointment.appointment_time.to_time + appointment.duration.hours).to_datetime
       end_hour = (appointment.appointment_time.to_time + appointment.duration.hours).to_datetime.strftime('%k').to_i
       end_time_formated = (appointment.appointment_time.to_time + appointment.duration.hours).to_datetime.strftime("%l:%M%p")
-      
+
       if index < appointments.length - 1
         next_start_time = sorted[index + 1].appointment_time
         next_start_time_formated = next_start_time.strftime("%l:%M%p")

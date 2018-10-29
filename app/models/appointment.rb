@@ -1,7 +1,13 @@
 class Appointment < ApplicationRecord
   validates :appointment_time, :duration, presence: true
   belongs_to :doctor
-  validate :between_nine_and_five
+  validate :between_nine_and_five, :is_a_date
+
+  def is_a_date
+    if (self.appointment_time.kind_of?(DateTime) == false)
+      self.errors.add(:name, "Pick a valid date")
+    end
+  end
 
 
 
@@ -11,21 +17,21 @@ class Appointment < ApplicationRecord
     minute = self.appointment_time.strftime('%M')
     end_time = (self.appointment_time.to_time + self.duration.hours).to_datetime
     end_time_day_of_week = end_time.strftime('%A')
-    
-    debugger
+
+
     if day_of_week === "Sunday" || day_of_week === "Saturday"
-      puts "No appointments on the weekend"
-      self.errors.add("No appointments on the weekend")
+
+      self.errors.add(:name, "No appointments on the weekend")
     end
 
     if hour < 9 || hour > 17
-      puts "Invalid start time"
-      self.errors.add("Invalid start time")
+
+      self.errors.add(:name, "Invalid start time")
     end
 
     if ((hour + self.duration) >= 17 || self.appointment_time.to_date != end_time.to_date || duration < 1)
-      puts "Invalid end time"
-      self.errors.add("Invalid end time")
+    
+      self.errors.add(:name, "Invalid end time")
     end
 
 
