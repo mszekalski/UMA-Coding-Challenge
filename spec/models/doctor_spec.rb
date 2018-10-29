@@ -148,7 +148,9 @@ RSpec.describe Doctor, type: :model do
   it "returns no availbility when doctor is fully booked" do
     doctor = Doctor.create(first_name: "Matthew", last_name: "Szekalski")
     date1 = DateTime.parse('31st Oct 2018 9:00:00')
-    appointment1 = doctor.create_appointment(date1, 8)
+    appointment1 = doctor.create_appointment(date1, 3)
+    date2 = DateTime.parse('31st Oct 2018 12:00:00')
+    appointment1 = doctor.create_appointment(date2, 5)
     expect(doctor.available_appointments(date1)).to eq("No availbility for that date")
   end
 end
