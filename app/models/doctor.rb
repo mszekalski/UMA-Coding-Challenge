@@ -3,21 +3,19 @@ class Doctor < ApplicationRecord
   has_many :appointments
 
   def create_appointment(appointment_time, duration)
+
     if appointment_time < (DateTime.now - 5.second)
       self.errors.add(:name, "Can't schedule an appointment in the past")
     end
-    self.appointments.each do |appointment|
-      end_time_current = (appointment.appointment_time.to_time + appointment.duration.hours).to_datetime
-      start_time_current = appointment.appointment_time
-      end_time_coming_in = (appointment_time.to_time + duration.hours).to_datetime
-      start_time_coming_in = appointment_time
-      if (start_time_current <= start_time_coming_in && start_time_coming_in <= end_time_current ||
-        start_time_coming_in <= start_time_current && start_time_current <= end_time_coming_in)
 
+    self.appointments.each do |appointment|
+      requested_end_time = (appointment_time.to_time + duration.hours).to_datetime
+      requested_start_time = appointment_time
+      if (appointment.start_time <= requested_start_time && requested_start_time <= appointment.end_time ||
+        requested_start_time <= appointment.start_time && appointment.start_time <= requested_end_time)
         self.errors.add(:name, "Appointment not available")
       end
     end
-
 
     appointment = self.appointments.create({:appointment_time => appointment_time, :duration => duration})
 
@@ -25,46 +23,37 @@ class Doctor < ApplicationRecord
 
   def delete_appointment(appointment_time)
     appointment = self.appointments.find_by(appointment_time: appointment_time)
-
     Appointment.destroy(appointment.id)
   end
 
   def available_appointments(date)
 
-
     availability = []
     appointments = self.appointments.select { |appointment|  appointment.appointment_time.strftime("%Y-%m-%d") == date.strftime("%Y-%m-%d") }
     sorted = appointments.sort_by(&:appointment_time)
+
     sorted.each_with_index do |appointment, index|
-      start_hour = appointment.appointment_time.strftime('%k').to_i
-      start_time_formated = appointment.appointment_time.strftime("%l:%M")
-      end_time = (appointment.appointment_time.to_time + appointment.duration.hours).to_datetime
-      end_hour = (appointment.appointment_time.to_time + appointment.duration.hours).to_datetime.strftime('%k').to_i
-      end_time_formated = (appointment.appointment_time.to_time + appointment.duration.hours).to_datetime.strftime("%l:%M%p")
 
       if index < appointments.length - 1
-        next_start_time = sorted[index + 1].appointment_time
-        next_start_time_formated = next_start_time.strftime("%l:%M%p")
+        next_appointment = sorted[index + 1]
       end
 
-      if  start_hour >= 10 && index == 0
-        availability << "9AM to #{start_time}"
+      if  appointment.start_hour >= 10 && index == 0
+        availability << "9:00AM to #{appointment.start_time_formated}"
       end
 
-      if index < appointments.length - 1 && (end_time.to_time + 1.hours).to_datetime < next_start_time
-        availability << "#{end_time_formated} to #{next_start_time_formated}"
+      if index < appointments.length - 1 && (appointment.end_time.to_time + 1.hours).to_datetime < next_appointment.start_time
+        availability << "#{appointment.end_time_formated} to #{next_appointment.start_time_formated}"
       end
 
-      if index == sorted.length - 1 && end_hour <= 16
-        availability << "#{end_time_formated} to 5:00PM"
+      if index == sorted.length - 1 && appointment.end_hour <= 16 && appointment.start_hour != 17
+        availability << "#{appointment.end_time_formated} to 5:00PM"
       end
 
     end
-    return availability
+
+    availability
+
   end
-
-
-
-
 
 end

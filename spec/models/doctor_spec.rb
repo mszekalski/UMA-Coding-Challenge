@@ -78,10 +78,10 @@ RSpec.describe Doctor, type: :model do
     expect(appointment2.errors[:name]).not_to include("Invalid start time")
   end
 
-  it "won't make an appointment that starts after 5PM" do
+  it "won't make an appointment that starts after 4PM" do
     doctor = Doctor.create(first_name: "Matthew", last_name: "Szekalski")
-    date1 = DateTime.parse('31st Oct 2018 17:01:00')
-    date2 = DateTime.parse('31st Oct 2018 17:00:00')
+    date1 = DateTime.parse('31st Oct 2018 16:01:00')
+    date2 = DateTime.parse('31st Oct 2018 16:00:00')
     appointment1 = doctor.create_appointment(date1, 1)
     appointment2 = doctor.create_appointment(date2, 1)
     appointment1.valid?
@@ -90,10 +90,10 @@ RSpec.describe Doctor, type: :model do
     expect(appointment2.errors[:name]).not_to include("Invalid start time")
   end
 
-  it "won't make an appointment that ends after 6PM" do
+  it "won't make an appointment that ends after 5PM" do
     doctor = Doctor.create(first_name: "Matthew", last_name: "Szekalski")
-    date1 = DateTime.parse('31st Oct 2018 17:01:00')
-    date2 = DateTime.parse('31st Oct 2018 17:00:00')
+    date1 = DateTime.parse('31st Oct 2018 16:01:00')
+    date2 = DateTime.parse('31st Oct 2018 16:00:00')
     appointment1 = doctor.create_appointment(date1, 1)
     appointment2 = doctor.create_appointment(date2, 1)
     appointment1.valid?
@@ -116,5 +116,33 @@ RSpec.describe Doctor, type: :model do
     appointment1 = doctor.create_appointment(date1, 1)
     doctor.delete_appointment(appointment1.appointment_time)
     expect { appointment1.reload }.to raise_error ActiveRecord::RecordNotFound
+  end
+
+  it "returns availbility when the doctor has a 9AM appointment" do
+    doctor = Doctor.create(first_name: "Matthew", last_name: "Szekalski")
+    date1 = DateTime.parse('31st Oct 2018 9:00:00')
+    appointment1 = doctor.create_appointment(date1, 1)
+    expect(doctor.available_appointments(date1)).to eq(["10:00AM to 5:00PM"])
+  end
+
+
+  it "returns availbility when the doctor has multiple appointments during the day" do
+    doctor = Doctor.create(first_name: "Matthew", last_name: "Szekalski")
+    date1 = DateTime.parse('31st Oct 2018 9:00:00')
+    date2 = DateTime.parse('31st Oct 2018 12:00:00')
+    date3 = DateTime.parse('31st Oct 2018 14:00:00')
+    appointment1 = doctor.create_appointment(date1, 1)
+    appointment1 = doctor.create_appointment(date2, 1)
+    appointment1 = doctor.create_appointment(date3, 1)
+    expect(doctor.available_appointments(date1)).to eq(["10:00AM to 12:00PM", "3:00PM to 5:00PM"])
+  end
+
+  it "returns availbility when the doctor has back to back appointments" do
+    doctor = Doctor.create(first_name: "Matthew", last_name: "Szekalski")
+    date1 = DateTime.parse('31st Oct 2018 9:00:00')
+    date2 = DateTime.parse('31st Oct 2018 10:00:00')
+    appointment1 = doctor.create_appointment(date1, 1)
+    appointment1 = doctor.create_appointment(date2, 1)
+    expect(doctor.available_appointments(date1)).to eq(["11:00AM to 5:00PM"])
   end
 end
