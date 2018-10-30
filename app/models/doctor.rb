@@ -12,29 +12,35 @@ class Doctor < ApplicationRecord
   end
 
   def available_appointments(date)
+
+    appointments_for_date = self.appointments.where("appointment_time BETWEEN ? AND ?", date.beginning_of_day, date.end_of_day)
+
+    if appointments_for_date.count == 0
+      return ["9:00AM to 5:00PM"]
+    end
+
     availability = []
-    sorted = self.appointments.where("appointment_time BETWEEN ? AND ?", date.beginning_of_day, date.end_of_day).order("appointment_time ASC")
 
-    sorted.each_with_index do |appointment, index|
+    appointments_for_date.order("appointment_time ASC").each_with_index do |appointment, index|
 
-      if index < appointments.length - 1
-        next_appointment = sorted[index + 1]
+      if index < appointments_for_date.length - 1
+        next_appointment = appointments_for_date[index + 1]
       end
 
       if appointment.start_time >= appointment.day_of_at_ten && index == 0
         availability << "9:00AM to #{appointment.start_time_formated}"
       end
 
-      if index < appointments.length - 1 && (appointment.end_time.to_time + 1.hours).to_datetime < next_appointment.start_time
+      if index < appointments_for_date.length - 1 && (appointment.end_time.to_time + 1.hours).to_datetime < next_appointment.start_time
         availability << "#{appointment.end_time_formated} to #{next_appointment.start_time_formated}"
       end
 
-      if index == sorted.length - 1 && appointment.end_time <= appointment.day_of_at_four
+      if index == appointments_for_date.length - 1 && appointment.end_time <= appointment.day_of_at_four
         availability << "#{appointment.end_time_formated} to 5:00PM"
       end
 
     end
-    
+
     if availability.length > 0
       return availability
     else
