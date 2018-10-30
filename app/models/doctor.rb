@@ -34,7 +34,7 @@ class Doctor < ApplicationRecord
       end
 
     end
-
+    
     if availability.length > 0
       return availability
     else
